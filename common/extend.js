@@ -15,17 +15,18 @@ jQuery.extend = jQuery.fn.extend = function() {
 
 	// 当typeof target === 'boolean'时
 	// 则将deep设置为target的值
-	// 然后将target移动到第二个参数，如果为false
-	// 则默认为一个空对象
-	// 此时i++，源对象会被推到第三个参数
+	// 然后将target移动到第二个参数，
 	if (typeof target === "boolean") {
 		deep = target;
+		// 使用||运算符，排除隐式强制类型转换为false的数据类型
+		// 如'', 0, undefined, null, false等
+		// 如果target为以上的值，则设置target = {}
 		target = arguments[i] || {};
 		i++;
 	}
 
-	// 如果传入的目标对象的类型不是一个oject
-	// 并且target不是一个函数时，会将target默认设置为一个空对象
+	// 如果target不是一个对象或数组或函数，
+	// 则设置target = {}
 	// 这里与Object.assign的处理方法不同，
 	// assign方法会将Boolean、String、Number方法转换为对应的基本包装类型
 	// 然后再返回，
@@ -35,11 +36,13 @@ jQuery.extend = jQuery.fn.extend = function() {
 		target = {};
 	}
 
-	// 这里在刚刚谈过了
-	// 就是如果只有一个参数时，目标对象会是一个this对象
-	// this的指向需要看是使用$.fn.extend还是$.extend
+	// 如果arguments.length === 1 或
+	// typeof arguments[0] === 'boolean', 且存在arguments[1]，
+	// 这时候目标对象会指向this
+	// this的指向哪个对象需要看是使用$.fn.extend还是$.extend
 	if (i === length) {
 		target = this;
+		// i-- 表示不进入for循环
 		i--;
 	}
 
@@ -50,12 +53,14 @@ jQuery.extend = jQuery.fn.extend = function() {
 		// 这里有一个隐式强制类型转换 undefined == null 为 true
 		// 而undefined === null 为 false
 		// 所以如果源对象中数据类型为Undefined或Null
-		// 则忽略
+		// 则循环下一个源对象
 		if ((options = arguments[i]) != null) {
-			// 循环每一个源对象
+			// 遍历所有[[emuerable]] === true的源对象
+			// 包括Object, Array, String
+			// 如果遇到源对象的数据类型为Boolean, Number
+			// for in循环会被跳过，不执行for in循环
 			for (name in options) {
-				// src: 判断目标对象是否存在该属性
-				// src主要用于target对象也存在name属性
+				// src用于判断target对象是否存在name属性
 				src = target[name];
 
 				// 需要复制的属性
@@ -75,31 +80,32 @@ jQuery.extend = jQuery.fn.extend = function() {
 				// 则需要递归jQuery.extend(),
 				// 直到copy成为一个基本数据类型为止
 				if (deep && copy && (jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)))) {
+					// 深复制
 					if (copyIsArray) {
 						// 将copyIsArray重置为默认值
 						copyIsArray = false;
-						// 当目标对象中存在源对象的同一属性时
-						// 则使用该目标对象的属性（一个数组）
-						// 否则重新创建一个数组，用于复制
+						// 如果目标对象存在name属性且是一个数组
+						// 则使用目标对象的name属性，否则重新创建一个数组，用于复制
 						clone = src && jQuery.isArray(src) ? src : [];
 
 					} else {
-						// 当目标对象中存在源对象的同一属性时
-						// 则使用该目标对象的属性（一个对象）
-						// 否则重新创建一个对象，用于复制
+						// 如果目标对象存在name属性且是一个对象
+						// 则使用目标对象的name属性，否则重新创建一个对象，用于复制
 						clone = src && jQuery.isPlainObject(src) ? src : {};
 					}
 
-					// 递归调用jQuery.extend，
-					// 直到copy值的数据类型为简单数据类型为止
+					// 因为深复制，所以递归调用copyObject函数
+					// 返回值为target对象，即clone对象
+					// copy是一个源对象
 					target[name] = jQuery.extend(deep, clone, copy);
 
-				// 如果copy不是一个对象或数组，或者属于浅复制
-				// 那么执行elseif分支
-				// 在elseif判断中如果copy是一个对象或数组，
-				// 但是都为空的话，排除这种情况
-				// 因为获取空对象的属性会返回undefined
 				} else if (copy !== undefined) {
+					// 浅复制
+					// 如果copy不是一个对象或数组
+					// 那么执行elseif分支
+					// 在elseif判断中如果copy是一个对象或数组，
+					// 但是都为空的话，排除这种情况
+					// 因为获取空对象的属性会返回undefined
 					target[name] = copy;
 				}
 			}
