@@ -7,8 +7,9 @@
 jQuery.extend = jQuery.fn.extend = function() {
 	var options, name, src, copy, copyIsArray, clone,
 		target = arguments[0] || {},
-		// 这里用了||运算符，当arguments[0]为false时，
-		// target默认等于一个空对象
+		// 使用||运算符，排除隐式强制类型转换为false的数据类型
+		// 如'', 0, undefined, null, false等
+		// 如果target为以上的值，则设置target = {}
 		i = 1,
 		length = arguments.length,
 		deep = false;
@@ -30,7 +31,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 	// 这里与Object.assign的处理方法不同，
 	// assign方法会将Boolean、String、Number方法转换为对应的基本包装类型
 	// 然后再返回，
-	// 而extend方法直接将类型不为object或function的数据类型
+	// 而extend方法直接将typeof不为object或function的数据类型
 	// 全部转换为一个空对象
 	if (typeof target !== "object" && !jQuery.isFunction(target)) {
 		target = {};
@@ -53,7 +54,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 		// 这里有一个隐式强制类型转换 undefined == null 为 true
 		// 而undefined === null 为 false
 		// 所以如果源对象中数据类型为Undefined或Null
-		// 则循环下一个源对象
+		// 那么就会跳过本次循环，接着循环下一个源对象
 		if ((options = arguments[i]) != null) {
 			// 遍历所有[[emuerable]] === true的源对象
 			// 包括Object, Array, String
@@ -67,9 +68,9 @@ jQuery.extend = jQuery.fn.extend = function() {
 				// 当前源对象的name属性
 				copy = options[name];
 
-				// Prevent never-ending loop
 				// 这种情况暂时未遇到..
-				// 因为即使copy是同target是一样的对象
+				// 按照我的理解，
+				// 即使copy是同target是一样的对象
 				// 两个对象也不可能相等的..
 				if (target === copy) {
 					continue;
@@ -82,6 +83,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 				if (deep && copy && (jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)))) {
 					// 深复制
 					if (copyIsArray) {
+						// 如果是copy是一个数组
 						// 将copyIsArray重置为默认值
 						copyIsArray = false;
 						// 如果目标对象存在name属性且是一个数组
@@ -94,7 +96,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 						clone = src && jQuery.isPlainObject(src) ? src : {};
 					}
 
-					// 因为深复制，所以递归调用copyObject函数
+					// 因为深复制，所以递归调用jQuery.extend方法
 					// 返回值为target对象，即clone对象
 					// copy是一个源对象
 					target[name] = jQuery.extend(deep, clone, copy);
@@ -112,7 +114,6 @@ jQuery.extend = jQuery.fn.extend = function() {
 		}
 	}
 
-	// Return the modified object
 	// 当源对象全部循环完毕之后，返回目标对象
 	return target;
 };
