@@ -1,6 +1,6 @@
 /*
 * jQuery-2.1.4 reading by unclekeith
-* isArraylike
+* isArraylike, getWindow
 */
 
 function isArraylike(obj) {
@@ -22,4 +22,9 @@ function isArraylike(obj) {
 
 	return type === "array" || length === 0 ||
 		typeof length === "number" && length > 0 && (length - 1) in obj;
+}
+
+// 判断一个对象是否是window对象
+function getWindow(elem) {
+	return jQuery.isWindow(elem) ? elem : elem.nodeType === 9 && elem.defaultView;
 }
